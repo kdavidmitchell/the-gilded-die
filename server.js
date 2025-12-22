@@ -1,11 +1,19 @@
 // server.js
 const express = require('express');
 const path = require('path');
+const { exec } = require('child_process');
 const gameEngine = require('./src/engine/GameEngine');
 
 const app = express();
-const PORT = 5000;
-const HOST = '0.0.0.0';
+
+// --- ENVIRONMENT DETECTION ---
+const isReplit = !!process.env.REPL_ID || !!process.env.REPLIT_SLUG;
+
+// --- CONFIGURATION ---
+const PORT = process.env.PORT || 5000;
+// Replit requires 0.0.0.0 to expose the port to the internet.
+// Locally, 'localhost' is safer and cleaner.
+const HOST = isReplit ? '0.0.0.0' : 'localhost';
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,21 +47,19 @@ app.post('/api/stop', (req, res) => {
 
 // 4. Shop & Items
 app.get('/api/shop', (req, res) => {
-    // 1. Get Config & State
     const { CRUEL_FORTUNES_CATALOG, FIENDISH_UPGRADES } = require('./src/config');
-    const gameEngine = require('./src/engine/GameEngine');
     const state = gameEngine.context;
     
-    // 2. Filter Upgrades
+    // Filter Upgrades
     const nextUpgrade = Object.values(FIENDISH_UPGRADES)
-        .sort((a, b) => a.dieSize - b.dieSize) // Sort smallest to largest
-        .find(u => u.dieSize > state.dieSize); // Find the FIRST one larger than current
+        .sort((a, b) => a.dieSize - b.dieSize)
+        .find(u => u.dieSize > state.dieSize);
 
-    // 3. Build Options
+    // Build Options
     const options = {
         boons: [CRUEL_FORTUNES_CATALOG.fiends_echo],
         maluses: !state.malusAcceptedThisTithe ? [CRUEL_FORTUNES_CATALOG.shackled_hand] : [],
-        upgrades: nextUpgrade ? [nextUpgrade] : [] // Only send the next upgrade
+        upgrades: nextUpgrade ? [nextUpgrade] : []
     };
     
     res.json(options);
@@ -76,7 +82,6 @@ app.post('/api/claim', (req, res) => {
 
 app.post('/api/input', (req, res) => {
     const { action, payload } = req.body;
-    // Routes generic inputs to the engine
     res.json(gameEngine.handleInput(action, payload));
 });
 
@@ -87,6 +92,23 @@ app.get('/*splat', (req, res) => {
 });
 
 app.listen(PORT, HOST, () => {
-    console.log(`The Gilded Die is open for business at http://${HOST}:${PORT}`);
+    const protocol = isReplit ? 'https' : 'http';
+    const displayHost = isReplit ? `0.0.0.0 (Public)` : 'localhost';
+    const url = `${protocol}://${isReplit ? req.get('host') : 'localhost'}:${PORT}`; // simplified for log
+
+    console.log(`\n==================================================`);
+    console.log(`   THE GILDED DIE IS RUNNING`);
+    console.log(`   ENVIRONMENT: ${isReplit ? 'CLOUD (Replit)' : 'LOCAL'}`);
+    console.log(`   ADDRESS:     http://${displayHost}:${PORT}`);
+    console.log(`==================================================\n`);
     console.log("The Proprietor is waiting...");
+
+    if (!isReplit) {
+        console.log(">> Launching interface...");
+        const startCommand = process.platform === 'darwin' ? 'open' 
+                           : process.platform === 'win32' ? 'start' 
+                           : 'xdg-open';
+        
+        exec(`${startCommand} http://localhost:${PORT}`);
+    }
 });
