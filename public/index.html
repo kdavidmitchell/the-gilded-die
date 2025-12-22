@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Gilded Die</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <pre class="ascii-art">
+ ___   _____ _   _  _____   _____ _____ _    ______ ___________  ______ _____ _____   ___ 
+|  _| |_   _| | | ||  ___| |  __ \_   _| |   |  _  \  ___|  _  \ |  _  \_   _|  ___| |_  |
+| |     | | | |_| || |__   | |  \/ | | | |   | | | | |__ | | | | | | | | | | | |__     | |
+| |     | | |  _  ||  __|  | | __  | | | |   | | | |  __|| | | | | | | | | | |  __|    | |
+| |     | | | | | || |___  | |_\ \_| |_| |___| |/ /| |___| |/ /  | |/ / _| |_| |___    | |
+| |_    \_/ \_| |_/\____/   \____/\___/\_____/___/ \____/|___/   |___/  \___/\____/   _| |
+|___|                                                                                |___|
+        </pre>
+        <div class="subtitle">--- SYSTEM.YEAR: UNDEFINED ---</div>
+        <button id="mute-btn" class="icon-btn">🔊</button>
+    </header>
+
+    <div id="tithe-seal" class="hidden">
+        <div class="terminal-alert">
+            <div class="alert-header">// SYSTEM_ALERT</div>
+            <div class="alert-body">
+                <span id="seal-line-1">UPLOAD</span>
+                <span id="seal-line-2">COMPLETE</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="proprietor-stage">
+        <div class="monitor-frame">
+            <div id="proprietor-avatar">
+                <img src="/images/proprietor_neutral.png" id="proprietor-img" class="crt-image">
+            </div>
+            <div class="scanlines"></div>
+            
+            <div id="speech-bubble" class="hidden">
+                <p id="speech-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <main id="game-container">
+        <div id="status-display">
+            <div class="status-box">
+                <h2>TITHE_COUNT</h2>
+                <p>[ <span id="tithe-number">1</span> / 5 ]</p>
+            </div>
+            <div class="status-box">
+                <h2>NET_FAVOR</h2>
+                <p><span id="session-favor">0</span> / <span id="required-favor">150</span></p>
+            </div>
+            <div class="status-box">
+                <h2>CYCLE</h2>
+                <p><span id="current-round">1</span> / <span id="total-rounds">7</span></p>
+            </div>
+        </div>
+
+        <div id="dice-display">
+            <div class="die">?</div><div class="die">?</div><div class="die">?</div><div class="die">?</div><div class="die">?</div>
+        </div>
+
+        <div id="active-fortunes-container" class="hidden">
+            <h3>// ACTIVE_DAEMONS</h3>
+            <div id="fortunes-list">
+                </div>
+        </div>
+
+        <div id="turn-status">
+            <h3>BUFFER: <span id="tribute-score">0</span></h3>
+        </div>
+
+        <div id="actions">
+            <button id="roll-btn" disabled>[ RUN_ROLL ]</button>
+            <button id="stop-btn" disabled>[ STOP_PROCESS ]</button>
+            <button id="take-turn-btn">[ EXECUTE ]</button>
+            <button id="bargain-btn">[ BARGAIN ]</button>
+            <button id="hoard-btn">[ VIEW_CACHE ]</button>
+        </div>
+
+        <div id="log-area">
+            <p>> CONNECTED TO MAINFRAME...</p>
+            <p>> WAITING FOR INPUT...</p>
+        </div>
+
+        <div id="shop-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>// THE_LEDGER</h2>
+                <div id="shop-container" style="overflow-y: auto;"></div>
+                <div class="modal-footer">
+                    <button id="close-shop-btn" class="shop-btn">[ CLOSE_STREAM ]</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="hoard-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>// CACHE_CONTENTS</h2>
+                <div id="hoard-container" style="overflow-y: auto;"></div>
+                <div class="modal-footer">
+                    <button id="close-hoard-btn" class="shop-btn">[ CLOSE_STREAM ]</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="reward-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>// TITHE_COMPLETE</h2>
+                <div id="reward-container" style="overflow-y: auto;"></div>
+                <div class="modal-footer"></div>
+            </div>
+        </div>
+
+        <div id="interaction-modal" class="modal hidden">
+            <div class="modal-content small-modal">
+                <h2>// INPUT_REQUIRED</h2>
+                <div id="interaction-prompt" style="padding: 20px; color: var(--gold-primary);"></div>
+                <div id="interaction-controls" style="display: flex; gap: 10px; justify-content: center; padding-bottom: 20px;">
+                    </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="intro-modal" class="modal">
+        <div class="modal-content">
+            <h2>// SYSTEM_MESSAGE</h2>
+            <div class="story-content">
+                <div id="story-text"></div>
+            </div>
+            <div id="story-controls">
+                <button id="btn-story-next" class="shop-btn">[ NEXT_PAGE ]</button>
+                <div id="story-choices" class="hidden" style="display: flex; gap: 15px;">
+                    <button id="btn-choice-yes" class="shop-btn">[ Y: RECOVER_DATA ]</button>
+                    <button id="btn-choice-no" class="shop-btn">[ N: RUN_TUTORIAL ]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="client.js"></script>
+</body>
+</html>
