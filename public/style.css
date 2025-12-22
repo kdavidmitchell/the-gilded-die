@@ -35,7 +35,7 @@ header { width: 100%; max-width: 800px; text-align: center; margin-top: 20px; po
     background: linear-gradient(to bottom, #fff7cc, var(--gold-primary));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 0 5px var(--gold-primary));
-    font-size: 10px; overflow: visible;
+    font-size: 6px; overflow: visible;
 }
 @media (min-width: 600px) { .ascii-art { font-size: 14px; } }
 
@@ -323,7 +323,7 @@ button:disabled { border-color: #333; color: #333; cursor: not-allowed; box-shad
 
 @media (max-width: 600px) {
     header { margin-top: 10px; }
-    .ascii-art { font-size: 8px; }
+    .ascii-art { font-size: 6px; }
     .subtitle { letter-spacing: 2px; font-size: 0.8rem; }
     
     /* 2. ADJUST THE MONITOR */
@@ -373,4 +373,27 @@ button:disabled { border-color: #333; color: #333; cursor: not-allowed; box-shad
     /* 7. TEXT SIZING */
     body { font-size: 1.1rem; }
     .log-area { height: 120px; font-size: 0.9rem; }
+}
+
+/* --- MOBILE CENTERING FIX --- */
+* {
+    box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+    #game-container {
+        width: 100%;
+        padding: 0 10px;
+        margin: 0 auto;
+    }
+    
+    header {
+        width: 100%;
+        padding: 0 10px;
+        margin: 0 auto;
+    }
+    
+    #proprietor-stage {
+        padding: 0 10px;
+    }
 }
