@@ -11,8 +11,6 @@ const isReplit = !!process.env.REPL_ID || !!process.env.REPLIT_SLUG;
 
 // --- CONFIGURATION ---
 const PORT = process.env.PORT || 5000;
-// Replit requires 0.0.0.0 to expose the port to the internet.
-// Locally, 'localhost' is safer and cleaner.
 const HOST = isReplit ? '0.0.0.0' : 'localhost';
 
 // Middleware
@@ -93,13 +91,13 @@ app.get('/*splat', (req, res) => {
 
 app.listen(PORT, HOST, () => {
     const protocol = isReplit ? 'https' : 'http';
-    const displayHost = isReplit ? `0.0.0.0 (Public)` : 'localhost';
-    const url = `${protocol}://${isReplit ? req.get('host') : 'localhost'}:${PORT}`; // simplified for log
+    const displayHost = isReplit ? `0.0.0.0` : 'localhost';
+    const url = `${protocol}://${displayHost}:${PORT}`;
 
     console.log(`\n==================================================`);
     console.log(`   THE GILDED DIE IS RUNNING`);
     console.log(`   ENVIRONMENT: ${isReplit ? 'CLOUD (Replit)' : 'LOCAL'}`);
-    console.log(`   ADDRESS:     http://${displayHost}:${PORT}`);
+    console.log(`   ADDRESS:     ${url}`);
     console.log(`==================================================\n`);
     console.log("The Proprietor is waiting...");
 
