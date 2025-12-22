@@ -1,11 +1,11 @@
 // server.js
 const express = require('express');
 const path = require('path');
-const { exec } = require('child_process');
 const gameEngine = require('./src/engine/GameEngine');
 
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
+const HOST = '0.0.0.0';
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -86,18 +86,7 @@ app.get('/*splat', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    const url = `http://localhost:${PORT}`;
-    console.log(`The Gilded Die is open for business at http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+    console.log(`The Gilded Die is open for business at http://${HOST}:${PORT}`);
     console.log("The Proprietor is waiting...");
-
-    const startCommand = (process.platform === 'darwin' ? 'open' : 
-                          process.platform === 'win32' ? 'start' : 
-                          'xdg-open');
-                          
-    exec(`${startCommand} ${url}`, (err) => {
-        if (err) {
-            console.log("Could not automatically open browser. Please open the link manually.");
-        }
-    });
 });
