@@ -1,3 +1,4 @@
+// src/utils.js
 const logger = require('./logger');
 
 function rollDice(numDice = 5, sides = 6) {
@@ -5,38 +6,60 @@ function rollDice(numDice = 5, sides = 6) {
 }
 
 function calculateRollScore(dice, sides = 6) {
+    // 1. Calculate Tribute (Sum of Dice)
+    const tribute = dice.reduce((a, b) => a + b, 0);
+
+    // 2. Analyze Matches & Crits
     const counts = {};
-    dice.forEach(num => counts[num] = (counts[num] || 0) + 1);
-    
-    let score = 0;
-    let hasScoringSet = false;
-    const countValues = Object.values(counts);
+    let maxDieCount = 0; // "Crit" tracker
 
-    if (countValues.length === 2 && countValues.includes(3) && countValues.includes(2)) {
-        score += 25;
-    }
+    dice.forEach(val => {
+        counts[val] = (counts[val] || 0) + 1;
+        if (val === sides) maxDieCount++;
+    });
 
-    let hasBonus = false;
+    // 3. Calculate Favor
+    let favor = 0;
     
-    for (let i = sides; i >= 2; i--) {
-        const count = counts[i] || 0;
-        if (count >= 3 && !hasBonus) {
-            hasBonus = true;
-            if (count === 5) score += 200;
-            else if (count === 4) score += 100;
-            else if (count === 3) score += 50;
-        }
+    // A. "Crit" Bonus: 1 Favor per Max Value rolled
+    favor += maxDieCount;
+
+    // B. Match Bonus
+    // Award favor for Pairs (2), Triples (3), Quads (4), Yahtzees (5)
+    // Add a FLAT BONUS based on die size to compensate for lower match probability.
+    Object.values(counts).forEach(count => {
         if (count >= 2) {
-            score += count * i;
-            hasScoringSet = true;
-        }
-    }
+            // Base Match Value
+            let matchValue = 0;
+            if (count === 2) matchValue = 1;
+            else if (count === 3) matchValue = 3;
+            else if (count === 4) matchValue = 6;
+            else if (count === 5) matchValue = 10;
 
-    if (!hasScoringSet) return { score: 0, isBust: true };
-    
-    const onesCount = counts[1] || 0;
-    score -= onesCount;
-    return { score: Math.max(0, score), isBust: false };
+            // Tier Scaling
+            // d6 = +0
+            // d8 = +1
+            // d10 = +2
+            // d12+ = +3
+            let tierBonus = 0;
+            if (sides >= 8) tierBonus = 1;
+            if (sides >= 10) tierBonus = 2;
+            if (sides >= 12) tierBonus = 3;
+
+            favor += (matchValue + tierBonus);
+        }
+    });
+
+    // 4. Bust Check
+    const hasMatch = Object.values(counts).some(c => c >= 2);
+    const isBust = !hasMatch;
+
+    return {
+        score: tribute,
+        favor: favor,
+        isBust: isBust,
+        matchCount: hasMatch ? 1 : 0 
+    };
 }
 
 function displayBanner(text) {

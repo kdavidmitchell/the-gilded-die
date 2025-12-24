@@ -144,13 +144,6 @@ const PRIZES = {
             description: "A severed glove that turns lead to gold.",
             corrupted_suffix: "Everything you touch turns to ash."
         },
-        {
-            id: 'throne',
-            name: "Seat of Power",
-            corrupted_name: "Electric Chair",
-            description: "A miniature throne. Holding it makes you feel tall.",
-            corrupted_suffix: "It shocks you with 10,000 volts of regret."
-        }
     ],
     5: [
         {
@@ -368,6 +361,14 @@ const CRUEL_FORTUNES_CATALOG = {
             return score - onesCount;
         }
     },
+
+    gilded_cage: {
+        id: 'gilded_cage',
+        name: "The Gilded Cage",
+        type: 'malus',
+        description: "You are trapped within the Gilded Cage. You cannot bank your Tribute.",
+        duration: 1,
+    },
 };
 
 // ==========================================
@@ -477,18 +478,28 @@ const INFERNAL_EDICTS = [
         description: "The Fiend flashes a hungry smile. Your tribute is locked in, and you MUST roll again.",
         // Checks for a strict, ordered 4-dice straight (e.g., 5-6-7-8)
         checker: (dice) => {
-            const straight1 = dice[1] === dice[0] + 1 && dice[2] === dice[1] + 1 && dice[3] === dice[2] + 1;
-            const straight2 = dice[2] === dice[1] + 1 && dice[3] === dice[2] + 1 && dice[4] === dice[3] + 1;
-            return straight1 || straight2;
+            // Sort unique values to check for sequence
+            const sorted = [...new Set(dice)].sort((a,b) => a-b);
+            let sequence = 0;
+            for(let i=0; i < sorted.length - 1; i++) {
+                if (sorted[i+1] === sorted[i] + 1) sequence++;
+                else sequence = 0;
+                if (sequence >= 3) return true; // 3 steps = 4 numbers (e.g. 1-2-3-4)
+            }
+            return false;
         },
         execute: (context) => {
+            // 1. Set the Flag (for UI)
             context.isGildedCageActive = true;
+            
+            // 2. Add the Active Fortune (for Duration/Cleanup)
+            context.activeFortunes.push({ ...CRUEL_FORTUNES_CATALOG.gilded_cage });
+            
             context.tribute += 70; 
-            // IMPORTANT: Return special signal for EdictState to handle
             return { type: 'force_roll' };
         },
         priority: 35
-    },
+    }
 ];
 
 const FIEND_QUIPS = {
@@ -595,18 +606,18 @@ const INTRO_DATA = {
     // Phase 3B: The Newcomer Path
     newcomer_intro: [
         "\"New hardware detected,\" he muses, his amber eyes looking you up and down. \"Operating system: Pristine. Data integrity: 100%. How... beautiful // fragile. Allow me to install the basic drivers...\"",
-        "\"The logic is simple. An infinite loop between Greed // Glory.\""
+        "\"The logic is simple. A recursive loop between Greed // Glory.\""
     ],
 
     // Phase 4: The Rules
     rules: [
         "1. THE DIRECTIVE: \"I require five Data Packets // Tithes. You must compile sufficient Favor to meet my demands before the Cycle Counter reaches its limit. Efficiency is mandatory.\"",
         
-        "2. THE EXECUTION: \"Initiate your turn with [ EXECUTE ]. You are then pushed into the runtime environment. Engage [ RUN_ROLL ] to generate entropy. Matches stabilize the signal // create Tribute. You must judge when to [ STOP_PROCESS ] to upload your buffer of tribute to the Mainframe. Only then will it be considered Favorable.\"",
+        "2. THE EXECUTION: \"Initiate your turn with [ EXECUTE ]. Engage [ RUN_ROLL ] to generate entropy. The total sum of these gilded dice stabilizes the signal // creates Tribute. Matching sets will further amplify the signal. You must judge when to [ STOP_PROCESS ] to upload your buffer. Only then will it be considered Favorable.\"",
         
-        "3. THE GLITCH: \"Warning: Entropy is volatile. A roll with no matches triggers a System Crash // Bust. Your current buffer is wiped. Furthermore, rolling '1's... that is my processing fee // tax. I extract value from them directly. However, even in a crash, I may grant a pittance of Mercy // instant Favor to keep the session active.\"",
+        "3. THE GLITCH: \"Warning: Entropy is volatile. A roll with NO MATCHING VALUES triggers a System Crash // Bust, and your buffer will be wiped. However, perfection is rewarded. Rolling a die's Maximum Value grants immediate Favor... even if the rest of the system crashes around it.\"",
         
-        "4. THE LEDGER: \"Access [ BARGAIN ] to open my LEDER. You may purchase Patches // Boons to stabilize your odds, or accept a Malus // Virus for an immediate injection of Favor. Permanent Upgrades // possible pitfalls await those willing to rewrite their source code.\"",
+        "4. THE LEDGER: \"Access [ BARGAIN ] to open my LEDGER. You may purchase Patches // Boons to stabilize your odds, or accept a Malus // Virus for an immediate injection of Favor. Permanent Upgrades // possible pitfalls await those willing to rewrite their source code.\"",
         
         "5. THE DOWNLOAD: \"Meet the Tithe requirement, and you may download an Artifact // Prize. Fail, and I will upload a Corrupted File to you. Be warned: These anomalies tend to resonate // breed. Too much corruption may... crash your operating system permanently.\"",
 

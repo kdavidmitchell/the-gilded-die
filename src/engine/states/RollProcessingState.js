@@ -47,49 +47,78 @@ class RollProcessingState extends BaseState {
         }
 
         // 5. SCORING
-        const { score, isBust } = calculateRollScore(dice, ctx.dieSize);
+        // Destructure 'favor' alongside score and isBust
+        const { score, favor, isBust } = calculateRollScore(dice, ctx.dieSize);
         
+        // You get this currency even if you bust (e.g., rolling a single 12 on d12s)
+        if (favor > 0) {
+            ctx.sessionFavor += favor;
+        }
+
         if (isBust) {
-            this.handleBust(engine);
+            this.handleBust(engine, favor); // Pass favor to customize the failure message
         } else {
-            this.handleSuccess(engine, score);
+            this.handleSuccess(engine, score, favor); // Pass favor to customize success message
         }
     }
 
     decayFortunes(engine) {
         const ctx = engine.context;
         const expired = [];
+        
         ctx.activeFortunes.forEach(f => f.duration--);
+        
         ctx.activeFortunes = ctx.activeFortunes.filter(f => {
             if (f.duration <= 0) {
                 expired.push(f.name);
+                
+                if (f.id === 'gilded_cage') {
+                    ctx.isGildedCageActive = false; 
+                }
+                
                 return false;
             }
             return true;
         });
-        if (expired.length > 0) engine.addEvent('info', `Effects expired: ${expired.join(', ')}`);
+        
+        if (expired.length > 0) {
+            engine.addEvent('info', `Effects expired: ${expired.join(', ')}`);
+        }
     }
 
-    handleBust(engine) {
+    handleBust(engine, favorGained) {
         const TitheResolutionState = require('./TitheResolutionState');
         
         // Ensure Tribute is wiped
         engine.context.tribute = 0; 
         
         // Explicit BUST event
-        engine.addEvent('bust', "BUST! The roll is worthless.");
+        // If we busted but gained favor from a Crit, acknowledge it
+        const msg = favorGained > 0
+            ? `BUST! No matches... but the High Roll grants +${favorGained} Favor.`
+            : "BUST! The roll is worthless.";
+
+        engine.addEvent('bust', msg);
         
         // Increment round
         engine.context.currentRound++;
         
-        // Transition to resolution (which then goes to Idle/Next Turn)
+        // Transition to resolution
         engine.transitionTo(new TitheResolutionState());
     }
 
-    handleSuccess(engine, score) {
+    handleSuccess(engine, score, favorGained) {
         const TurnState = require('./TurnState');
+        
         engine.context.tribute += score;
-        engine.addEvent('roll', `+${score} Tribute.`);
+        
+        // Update Log
+        // Show both resources generated
+        const msg = favorGained > 0
+            ? `+${score} Tribute. +${favorGained} Favor.`
+            : `+${score} Tribute.`;
+
+        engine.addEvent('roll', msg);
         engine.transitionTo(new TurnState());
     }
 }
