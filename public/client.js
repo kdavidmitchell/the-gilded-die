@@ -3,11 +3,11 @@
 class AudioManager {
     constructor() {
         this.sounds = {
-            ambience: '/audio/ambience.wav', 
-            roll:     '/audio/roll.m4a',
-            coin:     '/audio/coin.wav',
-            bust:     '/audio/bust.wav',
-            slam:     '/audio/slam.wav'
+            ambience: '/audio/ambience.wav',
+            roll: '/audio/roll.m4a',
+            coin: '/audio/coin.wav',
+            bust: '/audio/bust.wav',
+            slam: '/audio/slam.wav'
         };
         this.musicNode = null;
         this.isMuted = false;
@@ -61,7 +61,7 @@ const els = {
     tributeScore: document.getElementById('tribute-score'),
     logArea: document.getElementById('log-area'),
     diceContainer: document.getElementById('dice-display'),
-    
+
     // Fortunes
     activeFortunesContainer: document.getElementById('active-fortunes-container'),
     fortunesList: document.getElementById('fortunes-list'),
@@ -72,7 +72,7 @@ const els = {
     stopBtn: document.getElementById('stop-btn'),
     bargainBtn: document.getElementById('bargain-btn'),
     hoardBtn: document.getElementById('hoard-btn'),
-    
+
     // Modals
     shopModal: document.getElementById('shop-modal'),
     shopContainer: document.getElementById('shop-container'),
@@ -82,7 +82,7 @@ const els = {
     closeHoardBtn: document.getElementById('close-hoard-btn'),
     rewardModal: document.getElementById('reward-modal'),
     rewardContainer: document.getElementById('reward-container'),
-    
+
     // Interaction Modal (New)
     interactionModal: document.getElementById('interaction-modal'),
     interactionPrompt: document.getElementById('interaction-prompt'),
@@ -123,13 +123,15 @@ const API = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prizeIndex })
     }).then(r => r.json()),
-    
+
     // NEW: Generic Interaction (for FortuneInputState)
     interact: (handlerName, data) => fetch('/api/interact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ handler: handlerName, ...data })
-    }).then(r => r.json())
+    }).then(r => r.json()),
+
+    restart: () => fetch('/api/restart', { method: 'POST' }).then(r => r.json())
 };
 
 // ==========================================
@@ -143,7 +145,7 @@ function animateValue(element, start, end, duration) {
     const increment = end > start ? 1 : -1;
     const stepTime = Math.abs(Math.floor(duration / range));
     if (stepTime < 10) { element.textContent = end; return; }
-    const timer = setInterval(function() {
+    const timer = setInterval(function () {
         current += increment;
         element.textContent = current;
         if (current == end) clearInterval(timer);
@@ -155,14 +157,14 @@ function spawnFloatingText(targetEl, text, type = 'float-gain') {
     const el = document.createElement('div');
     el.className = `floating-text ${type}`;
     el.textContent = text;
-    el.style.left = `${rect.left + (rect.width / 2) - 20}px`; 
+    el.style.left = `${rect.left + (rect.width / 2) - 20}px`;
     el.style.top = `${rect.top}px`;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 1500);
 }
 
 function proprietorSpeak(text, emotion = 'normal') {
-    els.speechBubble.className = ''; 
+    els.speechBubble.className = '';
     clearTimeout(speechTimeout);
     clearInterval(typeWriterInterval);
 
@@ -171,9 +173,9 @@ function proprietorSpeak(text, emotion = 'normal') {
     }
 
     els.speechBubble.classList.remove('hidden');
-    els.speechText.textContent = ""; 
+    els.speechText.textContent = "";
     let charIndex = 0;
-    const speed = emotion === 'excited' ? 20 : 35; 
+    const speed = emotion === 'excited' ? 20 : 35;
 
     typeWriterInterval = setInterval(() => {
         if (charIndex < text.length) {
@@ -219,7 +221,7 @@ function updateUI({ state, config }) {
 
     const tributeDiff = state.tribute - prevTribute;
     if (tributeDiff > 0) {
-         setTimeout(() => spawnFloatingText(els.tributeScore, `+${tributeDiff}`, 'float-tribute'), 200);
+        setTimeout(() => spawnFloatingText(els.tributeScore, `+${tributeDiff}`, 'float-tribute'), 200);
     }
     animateValue(els.tributeScore, prevTribute, state.tribute, 500);
     prevTribute = state.tribute;
@@ -244,7 +246,7 @@ function updateUI({ state, config }) {
 function renderFortunes(fortunes) {
     if (fortunes && fortunes.length > 0) {
         els.activeFortunesContainer.classList.remove('hidden');
-        els.fortunesList.innerHTML = ''; 
+        els.fortunesList.innerHTML = '';
         fortunes.forEach(f => {
             const chip = document.createElement('div');
             chip.className = 'fortune-chip';
@@ -269,7 +271,7 @@ function renderDice(diceArray, isRolling = false, maxVal = 6) {
     }
 
     if (!diceArray || diceArray.length === 0) {
-        for(let i=0; i<5; i++) els.diceContainer.innerHTML += '<div class="die"></div>';
+        for (let i = 0; i < 5; i++) els.diceContainer.innerHTML += '<div class="die"></div>';
         return;
     }
 
@@ -277,7 +279,7 @@ function renderDice(diceArray, isRolling = false, maxVal = 6) {
         const die = document.createElement('div');
         die.className = `die die-${val}`;
         if (val === maxVal) die.classList.add('crit');
-        for(let i = 0; i < val; i++) {
+        for (let i = 0; i < val; i++) {
             const pip = document.createElement('span');
             pip.className = 'pip';
             die.appendChild(pip);
@@ -295,10 +297,10 @@ function addToLog(message, type = 'normal') {
 
 function setTurnActive(isActive) {
     els.rollBtn.disabled = !isActive;
-    
+
     if (isActive && isGildedCageActive) {
         els.stopBtn.disabled = true;
-        els.stopBtn.textContent = "[ LOCKED ]"; 
+        els.stopBtn.textContent = "[ LOCKED ]";
     } else {
         els.stopBtn.disabled = !isActive;
         els.stopBtn.textContent = "[ STOP_PROCESS ]";
@@ -314,7 +316,7 @@ function setTurnActive(isActive) {
 
 function handleServerResponse(responseJson) {
     if (!responseJson) return;
-    
+
     // 1. Update core UI data
     updateUI(responseJson);
 
@@ -326,9 +328,9 @@ function handleServerResponse(responseJson) {
 
             // --- BANKING ---
             if (event.type === 'bank') {
-                addToLog(event.text, 'info'); 
+                addToLog(event.text, 'info');
                 audio.play('coin');
-                if (event.amount >= 10) setProprietorMood('bored'); 
+                if (event.amount >= 10) setProprietorMood('bored');
             }
 
             // --- SHOPPING ---
@@ -343,10 +345,10 @@ function handleServerResponse(responseJson) {
             // --- ROLLS (Money Gain) ---
             else if (event.type === 'roll') {
                 if (event.text.includes('gain') || event.text.includes('claim')) {
-                    audio.play('coin'); 
+                    audio.play('coin');
                 }
             }
-            
+
             // --- LOGGING ---
             else if (event.type === 'info' || event.type === 'mercy') {
                 addToLog(event.text, event.type);
@@ -368,7 +370,7 @@ function handleServerResponse(responseJson) {
                 }
                 proprietorSpeak(event.text, 'edict');
                 setProprietorMood('excited');
-                
+
                 if (event.text.includes('Complete')) {
                     triggerTitheAlert('success');
                 }
@@ -403,7 +405,7 @@ function handleServerResponse(responseJson) {
 function handleInputRequest(event) {
     els.interactionModal.classList.remove('hidden');
     els.interactionPrompt.innerHTML = `<p>${event.text}</p>`;
-    els.interactionControls.innerHTML = ''; 
+    els.interactionControls.innerHTML = '';
 
     // 1. RENDER DICE IN MODAL
     if (event.dice) {
@@ -413,18 +415,18 @@ function handleInputRequest(event) {
         diceDisplay.style.justifyContent = 'center';
         diceDisplay.style.gap = '10px';
         diceDisplay.style.marginBottom = '20px';
-        
+
         event.dice.forEach(val => {
             const die = document.createElement('div');
             die.className = `die die-${val}`;
-            for(let i=0; i<val; i++) {
+            for (let i = 0; i < val; i++) {
                 const pip = document.createElement('span');
                 pip.className = 'pip';
                 die.appendChild(pip);
             }
             diceDisplay.appendChild(die);
         });
-        
+
         els.interactionPrompt.prepend(diceDisplay);
     }
 
@@ -436,14 +438,14 @@ function handleInputRequest(event) {
             const btn = document.createElement('button');
             btn.textContent = `[ ${i} ]`;
             btn.onclick = () => sendInputResponse(i);
-            
+
             if (event.dice && event.dice.includes(i)) {
-                btn.style.borderColor = '#fff'; 
+                btn.style.borderColor = '#fff';
                 btn.style.boxShadow = '0 0 10px var(--gold-primary)';
             } else {
                 btn.style.opacity = '0.5';
             }
-            
+
             els.interactionControls.appendChild(btn);
         }
     }
@@ -460,7 +462,7 @@ function handleInputRequest(event) {
 
 async function sendInputResponse(value, skipped = false) {
     els.interactionModal.classList.add('hidden');
-    
+
     try {
         const response = await fetch('/api/input', {
             method: 'POST',
@@ -492,41 +494,41 @@ els.rollBtn.addEventListener('click', async () => {
     // 1. UI START
     setTurnActive(false); // Disable buttons immediately
     els.diceContainer.classList.add('shaking');
-    
+
     // Play the full roll sound
-    audio.play('roll'); 
+    audio.play('roll');
 
     // 2. SLOT MACHINE EFFECT
     const tumbleInterval = setInterval(() => {
-        const randomDice = Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1);
-        renderDice(randomDice, true, 6); 
+        const randomDice = Array.from({ length: 5 }, () => Math.floor(Math.random() * 6) + 1);
+        renderDice(randomDice, true, 6);
     }, 100);
 
     try {
         // 3. FETCH & WAIT
         const [gameState] = await Promise.all([
             API.roll(),
-            new Promise(resolve => setTimeout(resolve, 1000)) 
+            new Promise(resolve => setTimeout(resolve, 1000))
         ]);
 
         // 4. STOP ANIMATION
         clearInterval(tumbleInterval);
         els.diceContainer.classList.remove('shaking');
-        
+
         // Render the actual result immediately
         renderDice(gameState.state.lastRoll, false, gameState.state.dieSize);
 
         // 5. THE LANDING BEAT & STATE CHECK
         setTimeout(() => {
             handleServerResponse(gameState);
-            
+
             const hasBusted = gameState.events && gameState.events.some(e => e.type === 'bust');
             const isReward = gameState.state.isChoosingReward;
 
             if (hasBusted || isReward) {
                 setTurnActive(false);
             } else {
-                setTurnActive(true); 
+                setTurnActive(true);
             }
         }, 300);
 
@@ -545,6 +547,13 @@ els.stopBtn.addEventListener('click', async () => {
     setTurnActive(false);
 });
 
+els.stopBtn.nextElementSibling?.addEventListener('click', () => { /* Placeholder if needed */ });
+document.getElementById('restart-btn').addEventListener('click', async () => {
+    if (!confirm("Are you sure? This will wipe your current session.")) return;
+    await API.restart();
+    window.location.reload();
+});
+
 // Shop / Hoard / Rewards
 els.bargainBtn.addEventListener('click', async () => {
     const options = await API.getShop();
@@ -554,14 +563,14 @@ els.bargainBtn.addEventListener('click', async () => {
         const div = document.createElement('div');
         div.className = 'shop-item';
         div.innerHTML = `<div><h4>${item.name}</h4><p>${item.description}</p></div>`;
-        
+
         const btn = document.createElement('button');
         btn.className = type === 'malus' ? 'shop-btn malus-btn' : 'shop-btn';
         btn.textContent = (type === 'boon' || type === 'upgrade') ? `Buy (${item.cost})` : `Accept (+${item.reward})`;
-        
+
         btn.onclick = async () => {
             const newState = await API.buyItem(item.id);
-            
+
             if (newState.error) {
                 alert(newState.error);
             } else {
@@ -605,7 +614,7 @@ els.choiceYes.addEventListener('click', () => {
     audio.startAmbience();
     els.storyChoices.classList.add('hidden');
     els.storyNextBtn.classList.remove('hidden');
-    
+
     // Load the Veteran text path
     storyQueue = [...introData.veteran];
     showNextLine();
@@ -615,7 +624,7 @@ els.choiceNo.addEventListener('click', () => {
     audio.startAmbience();
     els.storyChoices.classList.add('hidden');
     els.storyNextBtn.classList.remove('hidden');
-    
+
     // Load the Newcomer + Rules text path
     storyQueue = [...introData.newcomer_intro, ...introData.rules];
     showNextLine();
@@ -659,19 +668,19 @@ function handleEndOfQueue() {
         els.storyChoices.classList.remove('hidden');
         return;
     }
-    
+
     els.introModal.classList.add('hidden');
     addToLog("The game begins. Good luck.");
 }
 
 function setProprietorMood(mood) {
     const imgEl = els.proprietorAvatar.querySelector('img');
-    
+
     // 1. Map moods to filenames
-    const moodMap = { 
-        'neutral': '/images/proprietor_neutral.png', 
-        'excited': '/images/proprietor_excited.png', 
-        'bored': '/images/proprietor_bored.png'     
+    const moodMap = {
+        'neutral': '/images/proprietor_neutral.png',
+        'excited': '/images/proprietor_excited.png',
+        'bored': '/images/proprietor_bored.png'
     };
 
     const newSrc = moodMap[mood] || moodMap['neutral'];
@@ -680,7 +689,7 @@ function setProprietorMood(mood) {
     if (typeof moodTimeout !== 'undefined') {
         clearTimeout(moodTimeout);
     }
-    
+
     if (mood !== 'neutral') {
         moodTimeout = setTimeout(() => {
             setProprietorMood('neutral');
@@ -715,7 +724,7 @@ async function start() {
     try {
         // 1. Fetch and Init Intro
         introData = await API.getIntro();
-        
+
         if (introData && introData.opening) {
             storyQueue = [...introData.opening];
             els.introModal.classList.remove('hidden');
@@ -725,9 +734,9 @@ async function start() {
         // 2. Fetch Game State
         const state = await API.getGameState();
         updateUI(state);
-        
-    } catch(e) { 
-        console.error("Failed to start:", e); 
+
+    } catch (e) {
+        console.error("Failed to start:", e);
         addToLog("System Error: Could not load narrative.", "error");
     }
 }

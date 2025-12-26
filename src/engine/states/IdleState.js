@@ -19,10 +19,10 @@ class IdleState extends BaseState {
 
     handleShopPurchase(engine, { itemId }) {
         const ctx = engine.context;
-        
+
         // 1. SEARCH: Check Fortunes (Boons & Maluses)
         const fortune = Object.values(CRUEL_FORTUNES_CATALOG).find(f => f.id === itemId);
-        
+
         if (fortune) {
             if (fortune.type === 'boon') {
                 this._buyBoon(engine, ctx, fortune);
@@ -58,7 +58,7 @@ class IdleState extends BaseState {
             itemType: 'boon',
             itemName: item.name
         });
-        
+
         // Boons make the game easier, so the Fiend is bored
         engine.addEvent('quip', "\"A crutch? How disappointing.\"", { mood: 'bored' });
     }
@@ -69,19 +69,15 @@ class IdleState extends BaseState {
             return;
         }
 
-        const isExempt = item.id === 'shackled_hand';
-        if (!isExempt && ctx.malusAcceptedThisTithe) {
+        if (ctx.malusAcceptedThisTithe) {
             engine.addEvent('error', "You have already accepted a Malus this Tithe.");
             return;
         }
 
         ctx.sessionFavor += item.reward;
         ctx.activeFortunes.push({ ...item });
-        
-        // Only flag the tithe limit if it's NOT the exempt item
-        if (!isExempt) {
-            ctx.malusAcceptedThisTithe = true;
-        }
+
+        ctx.malusAcceptedThisTithe = true;
 
         engine.addEvent('shop_buy', `PACT SEALED: You accepted '${item.name}' (+${item.reward} Favor).`, {
             itemType: 'malus', itemName: item.name
@@ -102,7 +98,7 @@ class IdleState extends BaseState {
             itemType: 'upgrade',
             itemName: `d${item.dieSize} Dice`
         });
-        
+
         engine.addEvent('quip', "\"More sides... more suffering.\"", { mood: 'neutral' });
     }
 }

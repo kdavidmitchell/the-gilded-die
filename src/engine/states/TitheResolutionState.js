@@ -1,13 +1,13 @@
 // src/engine/states/TitheResolutionState.js
 const BaseState = require('./BaseState');
 const { PRIZES } = require('../../config');
-const { selectCorruptedPrize } = require('../../utils'); 
+const { selectCorruptedPrize } = require('../../utils');
 
 class TitheResolutionState extends BaseState {
     enter(engine) {
         const ctx = engine.context;
         const tithe = ctx.getCurrentTithe();
-        
+
         const IdleState = require('./IdleState');
 
         // We only resolve the Tithe (Win or Loss) if the player has exhausted their time.
@@ -28,10 +28,10 @@ class TitheResolutionState extends BaseState {
 
         const excess = ctx.sessionFavor - tithe.requiredFavor;
         ctx.sessionFavor = excess; // Carry over excess
-        
+
         engine.addEvent('edict', `--- Tithe ${tithe.number} Complete ---`);
         engine.addEvent('roll', `SUCCESS! Excess favor: ${excess}`);
-        
+
         engine.transitionTo(new RewardState());
     }
 
@@ -39,7 +39,7 @@ class TitheResolutionState extends BaseState {
         const ctx = engine.context;
         const SynergyState = require('./SynergyState');
         const IdleState = require('./IdleState');
-        
+
         engine.addEvent('bust', "FAILURE! The Tithe is unmet.");
 
         // 1. SELECT CORRUPTED PRIZE
@@ -48,9 +48,9 @@ class TitheResolutionState extends BaseState {
             const prize = selectCorruptedPrize(prizeList);
             const fullDesc = (prize.description + " " + (prize.corrupted_suffix || "")).trim();
 
-            ctx.inventory.push({ 
-                prizeId: prize.id, 
-                isCorrupted: true, 
+            ctx.inventory.push({
+                prizeId: prize.id,
+                isCorrupted: true,
                 tier: tithe.number,
                 name: prize.corrupted_name || `Corrupted ${prize.name}`,
                 description: fullDesc
@@ -66,6 +66,7 @@ class TitheResolutionState extends BaseState {
         // 3. ADVANCE
         ctx.currentTitheIndex++;
         ctx.currentRound = 1;
+        ctx.malusAcceptedThisTithe = false;
 
         // 4. CHECK ROUTING
         if (ctx.getCurrentTithe()) {

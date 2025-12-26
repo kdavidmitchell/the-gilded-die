@@ -613,7 +613,7 @@ const INTRO_DATA = {
     rules: [
         "1. THE DIRECTIVE: \"I require five Data Packets // Tithes. You must compile sufficient Favor to meet my demands before the Cycle Counter reaches its limit. Efficiency is mandatory.\"",
         
-        "2. THE EXECUTION: \"Initiate your turn with [ EXECUTE ]. Engage [ RUN_ROLL ] to generate entropy. The total sum of these gilded dice stabilizes the signal // creates Tribute. Matching sets will further amplify the signal. You must judge when to [ STOP_PROCESS ] to upload your buffer. Only then will it be considered Favorable.\"",
+        "2. THE EXECUTION: \"Initiate your turn with [ EXECUTE ]. Engage [ RUN_ROLL ] to generate entropy. The total sum of these gilded dice stabilizes the signal // creates Tribute, but only when matching values are present. You must judge when to [ STOP_PROCESS ] to upload your buffer. Only then will it be considered Favorable.\"",
         
         "3. THE GLITCH: \"Warning: Entropy is volatile. A roll with NO MATCHING VALUES triggers a System Crash // Bust, and your buffer will be wiped. However, perfection is rewarded. Rolling a die's Maximum Value grants immediate Favor... even if the rest of the system crashes around it.\"",
         

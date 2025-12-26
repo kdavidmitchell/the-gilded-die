@@ -17,6 +17,16 @@ class FortuneInputState extends BaseState {
         });
     }
 
+    serialize() {
+        return {
+            type: 'FortuneInputState',
+            data: {
+                currentDice: this.currentDice,
+                fortuneId: this.fortune.id // Save ID instead of object
+            }
+        };
+    }
+
     handleInput(engine, { value, skipped }) {
         const RollProcessingState = require('./RollProcessingState');
         const ctx = engine.context;
@@ -24,7 +34,7 @@ class FortuneInputState extends BaseState {
         // Skip logic
         if (skipped || !value) {
             engine.addEvent('info', "You ignore the whisper.");
-            engine.transitionTo(new RollProcessingState(this.currentDice, true));
+            engine.transitionTo(new RollProcessingState(this.currentDice, true, false));
             return;
         }
 
@@ -38,7 +48,7 @@ class FortuneInputState extends BaseState {
         });
 
         // Return to processing loop with NEW dice
-        engine.transitionTo(new RollProcessingState(newDice, true));
+        engine.transitionTo(new RollProcessingState(newDice, true, false));
     }
 }
 

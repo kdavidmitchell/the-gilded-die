@@ -4,18 +4,30 @@ const { rollDice, calculateRollScore } = require('../../utils');
 const { INFERNAL_EDICTS } = require('../../config');
 
 class RollProcessingState extends BaseState {
-    constructor(preRolledDice = null, skipIntervention = false) {
+    constructor(preRolledDice = null, skipIntervention = false, skipDecay = false) {
         super();
         this.preRolledDice = preRolledDice;
         this.skipIntervention = skipIntervention;
+        this.skipDecay = skipDecay;
+    }
+
+    serialize() {
+        return {
+            type: 'RollProcessingState',
+            data: {
+                preRolledDice: this.preRolledDice,
+                skipIntervention: this.skipIntervention,
+                skipDecay: this.skipDecay
+            }
+        };
     }
 
     enter(engine) {
         const ctx = engine.context;
 
         // 1. DECAY
-        if (!this.skipIntervention) this.decayFortunes(engine);
-        
+        if (!this.skipDecay) this.decayFortunes(engine);
+
         // 2. ROLL
         let dice = this.preRolledDice || rollDice(5, ctx.dieSize);
         if (!this.preRolledDice) {
@@ -31,14 +43,14 @@ class RollProcessingState extends BaseState {
             if (guidance) {
                 const FortuneInputState = require('./FortuneInputState');
                 engine.transitionTo(new FortuneInputState(dice, guidance));
-                return; 
+                return;
             }
         }
 
         // 4. EDICTS
         const triggeredEdict = INFERNAL_EDICTS
             .filter(e => e.checker(dice))
-            .sort((a,b) => b.priority - a.priority)[0];
+            .sort((a, b) => b.priority - a.priority)[0];
 
         if (triggeredEdict) {
             const EdictState = require('./EdictState');
@@ -49,7 +61,7 @@ class RollProcessingState extends BaseState {
         // 5. SCORING
         // Destructure 'favor' alongside score and isBust
         const { score, favor, isBust } = calculateRollScore(dice, ctx.dieSize);
-        
+
         // You get this currency even if you bust (e.g., rolling a single 12 on d12s)
         if (favor > 0) {
             ctx.sessionFavor += favor;
@@ -65,22 +77,22 @@ class RollProcessingState extends BaseState {
     decayFortunes(engine) {
         const ctx = engine.context;
         const expired = [];
-        
+
         ctx.activeFortunes.forEach(f => f.duration--);
-        
+
         ctx.activeFortunes = ctx.activeFortunes.filter(f => {
             if (f.duration <= 0) {
                 expired.push(f.name);
-                
+
                 if (f.id === 'gilded_cage') {
-                    ctx.isGildedCageActive = false; 
+                    ctx.isGildedCageActive = false;
                 }
-                
+
                 return false;
             }
             return true;
         });
-        
+
         if (expired.length > 0) {
             engine.addEvent('info', `Effects expired: ${expired.join(', ')}`);
         }
@@ -88,10 +100,10 @@ class RollProcessingState extends BaseState {
 
     handleBust(engine, favorGained) {
         const TitheResolutionState = require('./TitheResolutionState');
-        
+
         // Ensure Tribute is wiped
-        engine.context.tribute = 0; 
-        
+        engine.context.tribute = 0;
+
         // Explicit BUST event
         // If we busted but gained favor from a Crit, acknowledge it
         const msg = favorGained > 0
@@ -99,19 +111,19 @@ class RollProcessingState extends BaseState {
             : "BUST! The roll is worthless.";
 
         engine.addEvent('bust', msg);
-        
+
         // Increment round
         engine.context.currentRound++;
-        
+
         // Transition to resolution
         engine.transitionTo(new TitheResolutionState());
     }
 
     handleSuccess(engine, score, favorGained) {
         const TurnState = require('./TurnState');
-        
+
         engine.context.tribute += score;
-        
+
         // Update Log
         // Show both resources generated
         const msg = favorGained > 0
