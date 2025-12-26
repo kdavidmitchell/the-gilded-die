@@ -260,11 +260,41 @@ const SACRED_SYNERGIES = [
 ];
 
 const TITHES = [
-    { number: 1, requiredFavor: 200, rounds: 5, tier: 1 },
-    { number: 2, requiredFavor: 300, rounds: 8, tier: 2 },
-    { number: 3, requiredFavor: 450, rounds: 12, tier: 3 },
-    { number: 4, requiredFavor: 700, rounds: 16, tier: 4 },
-    { number: 5, requiredFavor: 950, rounds: 20, tier: 5 }
+    {
+        number: 1,
+        tier: 1,
+        requiredFavor: 350, // Start higher to account for Shackled Hand abuse
+        rounds: 6, // Tight deadline to force engagement
+        description: "A functional check. Compile the necessary entropy.",
+    },
+    {
+        number: 2,
+        tier: 2,
+        requiredFavor: 750, // The first jump. Requires d8 upgrades.
+        rounds: 7,
+        description: "Processing requirements have escalated. Adapt.",
+    },
+    {
+        number: 3,
+        tier: 3,
+        requiredFavor: 1350, // The mid-game grind.
+        rounds: 8,
+        description: "Throughput is suboptimal. Increase efficiency.",
+    },
+    {
+        number: 4,
+        tier: 4,
+        requiredFavor: 2200, // Requires d12s and smart item usage.
+        rounds: 9,
+        description: "The Mainframe demands significant tribute.",
+    },
+    {
+        number: 5,
+        tier: 5,
+        requiredFavor: 3200, // The final hurdle. Hard, but mathematically fair.
+        rounds: 10,
+        description: "Final System Check. Maximum output required.",
+    },
 ];
 
 // ==========================================
@@ -283,7 +313,7 @@ const CRUEL_FORTUNES_CATALOG = {
         onRoll: (dice, sides) => {
             const counts = {};
             dice.forEach(d => counts[d] = (counts[d] || 0) + 1);
-            
+
             let mostCommonFace = -1, maxCount = 1;
             for (const face in counts) {
                 if (counts[face] > maxCount) {
@@ -291,7 +321,7 @@ const CRUEL_FORTUNES_CATALOG = {
                     mostCommonFace = parseInt(face);
                 }
             }
-            
+
             if (mostCommonFace !== -1) {
                 const nonMatchIndex = dice.findIndex(d => d !== mostCommonFace);
                 if (nonMatchIndex !== -1) {
@@ -309,7 +339,7 @@ const CRUEL_FORTUNES_CATALOG = {
         description: "For 2 rolls, one of your dice is locked to the value of 1.",
         duration: 2,
         reward: 120,
-        onApply: () => { }, 
+        onApply: () => { },
         onRoll: (dice) => {
             dice[dice.length - 1] = 1;
             return dice;
@@ -330,7 +360,7 @@ const CRUEL_FORTUNES_CATALOG = {
         type: 'boon',
         description: "For 3 rolls, you may choose one die face to keep; all other dice are re-rolled once.",
         duration: 3,
-        isInteractive: true, 
+        isInteractive: true,
     },
 
     twisted_fate: {
@@ -479,10 +509,10 @@ const INFERNAL_EDICTS = [
         // Checks for a strict, ordered 4-dice straight (e.g., 5-6-7-8)
         checker: (dice) => {
             // Sort unique values to check for sequence
-            const sorted = [...new Set(dice)].sort((a,b) => a-b);
+            const sorted = [...new Set(dice)].sort((a, b) => a - b);
             let sequence = 0;
-            for(let i=0; i < sorted.length - 1; i++) {
-                if (sorted[i+1] === sorted[i] + 1) sequence++;
+            for (let i = 0; i < sorted.length - 1; i++) {
+                if (sorted[i + 1] === sorted[i] + 1) sequence++;
                 else sequence = 0;
                 if (sequence >= 3) return true; // 3 steps = 4 numbers (e.g. 1-2-3-4)
             }
@@ -491,11 +521,11 @@ const INFERNAL_EDICTS = [
         execute: (context) => {
             // 1. Set the Flag (for UI)
             context.isGildedCageActive = true;
-            
+
             // 2. Add the Active Fortune (for Duration/Cleanup)
             context.activeFortunes.push({ ...CRUEL_FORTUNES_CATALOG.gilded_cage });
-            
-            context.tribute += 70; 
+
+            context.tribute += 70;
             return { type: 'force_roll' };
         },
         priority: 35
@@ -593,7 +623,7 @@ const INTRO_DATA = {
         "\"Connection established,\" the figure intones, his voice synthetic yet dripping with charm. \"Bio-signature detected. Welcome, User. I am the System Administrator // Proprietor // Fiend.\"",
         "\"You stand before the Gilded Die. A terminal // trial for those seeking to optimize their futures.. or delete their pasts.\""
     ],
-    
+
     // Phase 2: The Question
     question: "The eyes on the screen narrow. \"Query: Does this user possess memory of previous iterations? Have we executed this protocol before?\"",
 
@@ -612,19 +642,19 @@ const INTRO_DATA = {
     // Phase 4: The Rules
     rules: [
         "1. THE DIRECTIVE: \"I require five Data Packets // Tithes. You must compile sufficient Favor to meet my demands before the Cycle Counter reaches its limit. Efficiency is mandatory.\"",
-        
+
         "2. THE EXECUTION: \"Initiate your turn with [ EXECUTE ]. Engage [ RUN_ROLL ] to generate entropy. The total sum of these gilded dice stabilizes the signal // creates Tribute, but only when matching values are present. You must judge when to [ STOP_PROCESS ] to upload your buffer. Only then will it be considered Favorable.\"",
-        
+
         "3. THE GLITCH: \"Warning: Entropy is volatile. A roll with NO MATCHING VALUES triggers a System Crash // Bust, and your buffer will be wiped. However, perfection is rewarded. Rolling a die's Maximum Value grants immediate Favor... even if the rest of the system crashes around it.\"",
-        
+
         "4. THE LEDGER: \"Access [ BARGAIN ] to open my LEDGER. You may purchase Patches // Boons to stabilize your odds, or accept a Malus // Virus for an immediate injection of Favor. Permanent Upgrades // possible pitfalls await those willing to rewrite their source code.\"",
-        
+
         "5. THE DOWNLOAD: \"Meet the Tithe requirement, and you may download an Artifact // Prize. Fail, and I will upload a Corrupted File to you. Be warned: These anomalies tend to resonate // breed. Too much corruption may... crash your operating system permanently.\"",
 
         "6. THE ARCHIVE: \"Your memory is finite. Consult [ VIEW_CACHE ] to inspect the Artifacts // Corrupted Files you have compiled during this session.\"",
-        
+
         "7. OVERRIDES: \"Monitor the terminal. Sometimes the code evolves. I will occasionally issue Edicts // Command Overrides that bypass standard logic.\"",
-        
+
         "\"The protocols are set,\" the Proprietor concludes, his eyes glowing like burning circuits. \"The variable... is you // free will. Press the button. Initiate the sequence.\""
     ]
 };
